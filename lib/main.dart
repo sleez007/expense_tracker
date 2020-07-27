@@ -1,4 +1,5 @@
 import 'package:expense_tracker/models/transaction.dart';
+import 'package:expense_tracker/widgets/chart.dart';
 import 'package:expense_tracker/widgets/new_transaction.dart';
 import 'package:expense_tracker/widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +21,10 @@ class MyApp extends StatelessWidget {
               fontFamily: 'OpenSans',
               fontSize: 18,
               fontWeight: FontWeight.bold
-            )
+            ),
+            button: TextStyle(color: Colors.white)
           ),
+
           appBarTheme: AppBarTheme(textTheme: ThemeData.light().textTheme.copyWith(title: TextStyle(fontFamily: 'OpenSans', fontSize: 20, fontWeight: FontWeight.bold)) )
 
         ),
@@ -50,20 +53,24 @@ class _MyHomePageState extends State<_MyHomePage> {
     });
   }
 
-  final List<Transaction> _userTransactions  =[
-//    Transaction(id: 't1', title: 'New Shoes', amount: 69.99, date: DateTime.now()),
-//    Transaction(
-//        id: 't2',
-//        title: 'Weekly Groceries',
-//        amount: 16.33,
-//        date: DateTime.now()
-//    )
-  ];
+  final List<Transaction> _userTransactions  =[];
 
-  void _addNewTransactions(String txTitle, double txAmount){
-    final newTx =  Transaction(title: txTitle, amount: txAmount, date: DateTime.now(), id: DateTime.now().toString());
+  List<Transaction> get _recentTransaction{
+    return _userTransactions.where((tx){
+      return tx.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
+    }).toList();
+  }
+
+  void _addNewTransactions(String txTitle, double txAmount, DateTime selectedDate){
+    final newTx =  Transaction(title: txTitle, amount: txAmount, date: selectedDate, id: DateTime.now().toString());
     setState(() {
       _userTransactions.add(newTx);
+    });
+  }
+
+  void _deleteTransaction(String id){
+    setState(() {
+      _userTransactions.removeWhere((obj)=> obj.id == id);
     });
   }
 
@@ -81,15 +88,8 @@ class _MyHomePageState extends State<_MyHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Container(
-            width: double.infinity,
-            child: Card(
-              color: Colors.blue,
-              child: Text('CHART'),
-              elevation: 5,
-            ),
-          ),
-          TransactionList(_userTransactions)
+          Chart(_recentTransaction),
+          TransactionList(_userTransactions, _deleteTransaction)
         ],
       )),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
