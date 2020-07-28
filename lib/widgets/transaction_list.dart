@@ -9,10 +9,10 @@ class TransactionList extends StatelessWidget {
   TransactionList(this.transactions, this._deleteTransaction);
   @override
   Widget build(BuildContext context) {
-    return Container(
-        height: 500,
-        child: transactions.isEmpty
-            ? Column(
+    final mediaQuery = MediaQuery.of(context);
+    return  transactions.isEmpty
+            ? LayoutBuilder(builder: (context, constraints){
+              return Column(
                 children: <Widget>[
                   Text(
                     'No transactions added yet!',
@@ -22,11 +22,12 @@ class TransactionList extends StatelessWidget {
                     height: 10,
                   ),
                   Container(
-                      height: 200,
+                      height: constraints.maxHeight *.6,
                       child: Image.asset('assets/images/waiting.png',
                           fit: BoxFit.cover))
                 ],
-              )
+              );
+    },)
             : ListView.builder(
                 itemCount: transactions.length,
                 itemBuilder: (ctx, index) {
@@ -46,43 +47,16 @@ class TransactionList extends StatelessWidget {
                         ,),
                       title:Text(transactions[index].title, style: Theme.of(context).textTheme.title) ,
                       subtitle: Text(DateFormat.yMMMd().format(transactions[index].date)),
-                      trailing: IconButton(icon: Icon(Icons.delete,),onPressed: ()=>_deleteTransaction(transactions[index].id),color: Theme.of(context).errorColor,),
+                      trailing:mediaQuery.size.width > 460?
+                          FlatButton.icon(
+                              onPressed: ()=>_deleteTransaction(transactions[index].id),
+                              icon: Icon(Icons.delete),
+                              textColor: Theme.of(context).errorColor ,
+                              label: Text('Delete')
+                          )
+                          : IconButton(icon: Icon(Icons.delete,),onPressed: ()=>_deleteTransaction(transactions[index].id),color: Theme.of(context).errorColor,),
                     ),
                   );
-//                  return Card(
-//                    child: Row(
-//                      children: <Widget>[
-//                        Container(
-//                          child: Text(
-//                            '\$${transactions[index].amount.toStringAsFixed(2)}',
-//                            style: TextStyle(
-//                                fontWeight: FontWeight.bold,
-//                                fontSize: 20,
-//                                color: Theme.of(context).primaryColor),
-//                          ),
-//                          margin: EdgeInsets.symmetric(
-//                              vertical: 10, horizontal: 15),
-//                          decoration: BoxDecoration(
-//                              border: Border.all(
-//                                  color: Theme.of(context).primaryColor,
-//                                  width: 2)),
-//                          padding: EdgeInsets.all(10),
-//                        ),
-//                        Column(
-//                          crossAxisAlignment: CrossAxisAlignment.start,
-//                          children: <Widget>[
-//                            Text(transactions[index].title,
-//                                style: Theme.of(context).textTheme.title),
-//                            Text(
-//                              DateFormat.yMMMd()
-//                                  .format(transactions[index].date),
-//                              style: TextStyle(color: Colors.grey),
-//                            )
-//                          ],
-//                        )
-//                      ],
-//                    ),
-//                  );
-                }));
+                });
   }
 }
