@@ -1,4 +1,5 @@
 import 'package:expense_tracker/models/transaction.dart';
+import 'package:expense_tracker/widgets/TransactionItem.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -18,45 +19,24 @@ class TransactionList extends StatelessWidget {
                     'No transactions added yet!',
                     style: Theme.of(context).textTheme.title,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   Container(
                       height: constraints.maxHeight *.6,
-                      child: Image.asset('assets/images/waiting.png',
-                          fit: BoxFit.cover))
+                      child: Image.asset('assets/images/waiting.png', fit: BoxFit.cover)
+                  )
                 ],
               );
     },)
-            : ListView.builder(
-                itemCount: transactions.length,
-                itemBuilder: (ctx, index) {
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-                    child:  ListTile(
-                      leading: CircleAvatar(
-                        radius: 30,
-                        child:Padding(
-                          padding: EdgeInsets.all(6),
-                          child: FittedBox(
-                              child: Text('\$${transactions[index].amount.toStringAsFixed(2)}')
-                          ),
-                        )
+            : ListView(
+              children: transactions.map((tx)=>TransactionItem(key: ValueKey(tx.id),transaction: tx, mediaQuery: mediaQuery, deleteTransaction: _deleteTransaction)).toList()
 
-                        ,),
-                      title:Text(transactions[index].title, style: Theme.of(context).textTheme.title) ,
-                      subtitle: Text(DateFormat.yMMMd().format(transactions[index].date)),
-                      trailing:mediaQuery.size.width > 460?
-                          FlatButton.icon(
-                              onPressed: ()=>_deleteTransaction(transactions[index].id),
-                              icon: Icon(Icons.delete),
-                              textColor: Theme.of(context).errorColor ,
-                              label: Text('Delete')
-                          )
-                          : IconButton(icon: Icon(Icons.delete,),onPressed: ()=>_deleteTransaction(transactions[index].id),color: Theme.of(context).errorColor,),
-                    ),
-                  );
-                });
+//                itemCount: transactions.length,
+//                itemBuilder: (ctx, index) {
+//                  return
+//                }
+                );
   }
 }
+

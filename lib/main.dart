@@ -53,7 +53,7 @@ class _MyHomePage extends StatefulWidget {
   }
 }
 
-class _MyHomePageState extends State<_MyHomePage> {
+class _MyHomePageState extends State<_MyHomePage> with WidgetsBindingObserver {
   void startAddNewTransaction(BuildContext context) {
     showModalBottomSheet(
         context: context,
@@ -76,6 +76,25 @@ class _MyHomePageState extends State<_MyHomePage> {
 
   bool _showCart = false;
 
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    print(state);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
   void _addNewTransactions(
       String txTitle, double txAmount, DateTime selectedDate) {
     final newTx = Transaction(
@@ -92,6 +111,44 @@ class _MyHomePageState extends State<_MyHomePage> {
     setState(() {
       _userTransactions.removeWhere((obj) => obj.id == id);
     });
+  }
+
+  List<Widget> _buildLandScapeContent(MediaQueryData mediaQuery,PreferredSizeWidget appBar,Widget txListWidget){
+      return  [Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('Show Chart', style: Theme.of(context).textTheme.title,),
+          Switch.adaptive(
+              activeColor: Theme.of(context).accentColor,
+              value: _showCart,
+              onChanged: (val) {
+                setState(() {
+                  _showCart = val;
+                });
+              })
+        ],
+      ),
+        _showCart
+            ? Container(
+          height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) * .7,
+          child: Chart(_recentTransaction),
+        )
+            : txListWidget
+      ];
+  }
+
+  List<Widget> _buildPotraitContent(MediaQueryData mediaQuery,PreferredSizeWidget appBar,Widget txListWidget  ){
+    return [Container(
+      height: (mediaQuery.size.height -
+          appBar.preferredSize.height -
+          mediaQuery.padding.top) *
+          .3,
+      child: Chart(_recentTransaction),
+    ),
+      txListWidget
+    ];
   }
 
   @override
@@ -130,37 +187,8 @@ class _MyHomePageState extends State<_MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            if (isLandScape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text('Show Chart', style: Theme.of(context).textTheme.title,),
-                  Switch.adaptive(
-                      activeColor: Theme.of(context).accentColor,
-                      value: _showCart,
-                      onChanged: (val) {
-                        setState(() {
-                          _showCart = val;
-                        });
-                      })
-                ],
-              ),
-            if(!isLandScape) Container(
-              height: (mediaQuery.size.height -
-                  appBar.preferredSize.height -
-                  mediaQuery.padding.top) *
-                  .3,
-              child: Chart(_recentTransaction),
-            ),
-            if(!isLandScape) txListWidget,
-            if(isLandScape) _showCart
-                ? Container(
-              height: (mediaQuery.size.height -
-                  appBar.preferredSize.height -
-                  mediaQuery.padding.top) * .7,
-              child: Chart(_recentTransaction),
-            )
-                : txListWidget
+            if (isLandScape) ..._buildLandScapeContent(mediaQuery, appBar, txListWidget),
+            if(!isLandScape) ..._buildPotraitContent(mediaQuery, appBar, txListWidget)
           ],
         )));
 
@@ -171,7 +199,7 @@ class _MyHomePageState extends State<_MyHomePage> {
       appBar: appBar,
       body: pageBody,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Platform.isIOS?Container(): FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () => startAddNewTransaction(context)),
     );
